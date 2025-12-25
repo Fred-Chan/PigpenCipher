@@ -3,277 +3,397 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>猪圈密码图解 (Pigpen Cipher)</title>
+    <title>猪圈密码多模式图解 (Pigpen Cipher)</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Custom styles for cipher shapes */
-        .cipher-char {
-            width: 48px;
-            height: 48px;
-            margin: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-    </style>
 </head>
-<body class="bg-gray-100 min-h-screen py-8">
-    <div id="app" class="p-6 max-w-4xl mx-auto bg-slate-50 rounded-xl shadow-lg font-sans text-slate-800">
+<body class="bg-slate-100 min-h-screen">
+    <div id="app" class="p-4 md:p-8 max-w-5xl mx-auto bg-slate-50 min-h-screen font-sans">
+
+        <!-- Header -->
         <div class="text-center mb-8">
-            <h2 class="text-3xl font-bold text-slate-900 mb-2 flex items-center justify-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-3 flex items-center justify-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                猪圈密码图解 (Pigpen Cipher)
-            </h2>
-            <p class="text-slate-600">这是一种将字母替换为几何图形的简单密码。</p>
+                猪圈密码多模式图解
+            </h1>
+            <p class="text-slate-600">选择不同的加密模式，观察符号的变化</p>
         </div>
 
-        <!-- 1. The Reference Grid (The "Key") -->
-        <div class="mb-10 bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="4 7 4 4 20 4 20 7"></polyline>
-                    <line x1="9" x2="15" y1="20" y2="20"></line>
-                    <line x1="12" x2="12" y1="4" y2="20"></line>
+        <!-- Variant Selector Tabs -->
+        <div class="flex flex-wrap justify-center gap-2 mb-8">
+            <button id="btn-standard" onclick="setVariant('standard')" class="flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all bg-blue-600 text-white shadow-lg scale-105">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/>
                 </svg>
-                1. 密码对照表 (解密钥匙)
-            </h3>
-            <p class="text-sm text-slate-500 mb-6">观察字母所在的位置。线条的形状就是该字母的密码符号。</p>
+                标准版
+            </button>
+            <button id="btn-vertical" onclick="setVariant('vertical')" class="flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all bg-white text-slate-600 hover:bg-slate-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14"/><path d="m19 12-7 7-7-7"/>
+                </svg>
+                竖向填充
+            </button>
+            <button id="btn-allgrid" onclick="setVariant('allgrid')" class="flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all bg-white text-slate-600 hover:bg-slate-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>
+                </svg>
+                全井字格
+            </button>
+        </div>
 
-            <div class="flex flex-wrap justify-center gap-12">
-                <!-- Grid 1: A-I -->
-                <div class="relative">
-                    <div class="grid grid-cols-3 text-center text-2xl font-bold w-48 h-48">
-                        <div class="border-b-4 border-r-4 border-slate-800 flex items-center justify-center">A</div>
-                        <div class="border-b-4 border-l-4 border-r-4 border-slate-800 flex items-center justify-center">B</div>
-                        <div class="border-b-4 border-l-4 border-slate-800 flex items-center justify-center">C</div>
+        <!-- Main Content Area -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
 
-                        <div class="border-t-4 border-b-4 border-r-4 border-slate-800 flex items-center justify-center">D</div>
-                        <div class="border-4 border-slate-800 flex items-center justify-center">E</div>
-                        <div class="border-t-4 border-b-4 border-l-4 border-slate-800 flex items-center justify-center">F</div>
-
-                        <div class="border-t-4 border-r-4 border-slate-800 flex items-center justify-center">G</div>
-                        <div class="border-t-4 border-l-4 border-r-4 border-slate-800 flex items-center justify-center">H</div>
-                        <div class="border-t-4 border-l-4 border-slate-800 flex items-center justify-center">I</div>
-                    </div>
-                    <p class="text-center mt-2 font-semibold text-slate-500">基础组 (A-I)</p>
-                </div>
-
-                <!-- Grid 2: J-R (Dots) -->
-                <div class="relative">
-                    <div class="grid grid-cols-3 text-center text-2xl font-bold w-48 h-48">
-                        <div class="border-b-4 border-r-4 border-slate-800 flex items-center justify-center">J</div>
-                        <div class="border-b-4 border-l-4 border-r-4 border-slate-800 flex items-center justify-center">K</div>
-                        <div class="border-b-4 border-l-4 border-slate-800 flex items-center justify-center">L</div>
-
-                        <div class="border-t-4 border-b-4 border-r-4 border-slate-800 flex items-center justify-center">M</div>
-                        <div class="border-4 border-slate-800 flex items-center justify-center">N</div>
-                        <div class="border-t-4 border-b-4 border-l-4 border-slate-800 flex items-center justify-center">O</div>
-
-                        <div class="border-t-4 border-r-4 border-slate-800 flex items-center justify-center">P</div>
-                        <div class="border-t-4 border-l-4 border-r-4 border-slate-800 flex items-center justify-center">Q</div>
-                        <div class="border-t-4 border-l-4 border-slate-800 flex items-center justify-center">R</div>
-                    </div>
-                    <!-- Visual dots overlay for grid 2 -->
-                    <div class="absolute inset-0 grid grid-cols-3 pointer-events-none">
-                        <div class="flex items-center justify-center"><div class="w-1.5 h-1.5 bg-slate-800 rounded-full mt-6"></div></div>
-                        <div class="flex items-center justify-center"><div class="w-1.5 h-1.5 bg-slate-800 rounded-full mt-6"></div></div>
-                        <div class="flex items-center justify-center"><div class="w-1.5 h-1.5 bg-slate-800 rounded-full mt-6"></div></div>
-                        <div class="flex items-center justify-center"><div class="w-1.5 h-1.5 bg-slate-800 rounded-full mt-6"></div></div>
-                        <div class="flex items-center justify-center"><div class="w-1.5 h-1.5 bg-slate-800 rounded-full mt-6"></div></div>
-                        <div class="flex items-center justify-center"><div class="w-1.5 h-1.5 bg-slate-800 rounded-full mt-6"></div></div>
-                        <div class="flex items-center justify-center"><div class="w-1.5 h-1.5 bg-slate-800 rounded-full mt-6"></div></div>
-                        <div class="flex items-center justify-center"><div class="w-1.5 h-1.5 bg-slate-800 rounded-full mt-6"></div></div>
-                        <div class="flex items-center justify-center"><div class="w-1.5 h-1.5 bg-slate-800 rounded-full mt-6"></div></div>
-                    </div>
-                    <p class="text-center mt-2 font-semibold text-slate-500">点点组 (J-R)</p>
-                </div>
-
-                <!-- Grid 3: S-V (X Shape) -->
-                <div class="relative w-48 h-48 flex items-center justify-center">
-                    <svg width="100%" height="100%" viewBox="0 0 200 200" class="absolute inset-0">
-                        <line x1="20" y1="20" x2="180" y2="180" stroke="#1e293b" stroke-width="4" />
-                        <line x1="180" y1="20" x2="20" y2="180" stroke="#1e293b" stroke-width="4" />
+            <!-- Variant Description -->
+            <div class="bg-slate-100 px-6 py-4 border-b border-slate-200">
+                <h2 id="variant-title" class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                        <line x1="9" x2="15" y1="20" y2="20"></line>
+                        <line x1="12" x2="12" y1="4" y2="20"></line>
                     </svg>
-                    <div class="relative w-full h-full grid grid-cols-3 grid-rows-3 text-2xl font-bold">
-                        <div></div><div class="flex justify-center items-end pb-2">S</div><div></div>
-                        <div class="flex items-center justify-end pr-2">V</div><div></div><div class="flex items-center justify-start pl-2">T</div>
-                        <div></div><div class="flex justify-center items-start pt-2">U</div><div></div>
-                    </div>
-                    <p class="absolute -bottom-8 w-full text-center font-semibold text-slate-500">X组 (S-V)</p>
-                </div>
+                    <span id="variant-name">标准版 (Standard)</span>
+                </h2>
+                <p id="variant-desc" class="text-slate-500 text-sm mt-1">最经典的猪圈密码。字母按行顺序填充。</p>
+            </div>
 
-                <!-- Grid 4: W-Z (Dotted X Shape) -->
-                <div class="relative w-48 h-48 flex items-center justify-center">
-                    <svg width="100%" height="100%" viewBox="0 0 200 200" class="absolute inset-0">
-                        <line x1="20" y1="20" x2="180" y2="180" stroke="#1e293b" stroke-width="4" />
-                        <line x1="180" y1="20" x2="20" y2="180" stroke="#1e293b" stroke-width="4" />
-                    </svg>
-                    <div class="relative w-full h-full grid grid-cols-3 grid-rows-3 text-2xl font-bold">
-                        <div></div>
-                        <div class="flex flex-col justify-center items-center pb-2">
-                            <span>W</span>
-                            <div class="w-1.5 h-1.5 bg-slate-800 rounded-full mt-1"></div>
-                        </div>
-                        <div></div>
-
-                        <div class="flex flex-row items-center justify-end pr-2">
-                            <span>Z</span>
-                            <div class="w-1.5 h-1.5 bg-slate-800 rounded-full ml-1"></div>
-                        </div>
-                        <div></div>
-                        <div class="flex flex-row items-center justify-start pl-2">
-                            <div class="w-1.5 h-1.5 bg-slate-800 rounded-full mr-1"></div>
-                            <span>X</span>
-                        </div>
-
-                        <div></div>
-                        <div class="flex flex-col justify-center items-center pt-2">
-                            <div class="w-1.5 h-1.5 bg-slate-800 rounded-full mb-1"></div>
-                            <span>Y</span>
-                        </div>
-                        <div></div>
-                    </div>
-                    <p class="absolute -bottom-8 w-full text-center font-semibold text-slate-500">带点X组 (W-Z)</p>
-                </div>
+            <!-- Visual Key Display -->
+            <div id="keyDisplay" class="p-8 flex flex-wrap justify-center gap-12 md:gap-16 bg-white">
+                <!-- Keys will be rendered here by JavaScript -->
             </div>
         </div>
 
-        <div class="h-8"></div>
+        <!-- Interactive Translator -->
+        <div class="bg-slate-800 text-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="p-4 bg-slate-900/50 border-b border-slate-700 flex items-center justify-between flex-wrap gap-2">
+                <h3 class="font-bold flex items-center gap-2 text-yellow-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
+                        <path d="M21 3v5h-5"></path>
+                    </svg>
+                    实时翻译器
+                </h3>
+                <span id="mode-badge" class="text-xs text-slate-400 bg-slate-800 px-2 py-1 rounded border border-slate-700">
+                    当前模式: 标准版 (Standard)
+                </span>
+            </div>
 
-        <!-- 2. Interactive Translator -->
-        <div class="bg-slate-800 text-white p-6 rounded-lg shadow-lg">
-            <h3 class="text-xl font-bold mb-4 flex items-center gap-2 text-yellow-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path>
-                    <path d="M21 3v5h-5"></path>
-                </svg>
-                2. 实时翻译器
-            </h3>
-            <p class="text-slate-300 mb-4 text-sm">在下方输入英文，看看它们变成什么样子：</p>
-
-            <div class="flex flex-col md:flex-row gap-6">
-                <div class="flex-1">
-                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">明文 (输入)</label>
+            <div class="p-6 md:p-8 flex flex-col gap-6">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-2">输入明文 (英文)</label>
                     <input
                         type="text"
                         id="inputText"
                         value="HELLO WORLD"
-                        class="w-full p-4 rounded bg-slate-700 border border-slate-600 text-white text-xl focus:outline-none focus:border-yellow-400 transition-colors uppercase"
-                        placeholder="输入英文..."
+                        class="w-full p-4 rounded-lg bg-slate-700 border-2 border-transparent focus:border-yellow-400 text-white text-xl transition-all outline-none uppercase placeholder-slate-500"
+                        placeholder="例如: SECRET CODE"
                     />
                 </div>
 
-                <div class="flex-1">
-                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">密文 (输出)</label>
-                    <div id="cipherOutput" class="w-full p-4 min-h-[88px] rounded bg-white text-slate-800 flex flex-wrap items-center">
-                        <span class="text-slate-400 italic">等待输入...</span>
+                <div class="relative">
+                    <label class="block text-xs uppercase tracking-wider text-slate-400 mb-2">输出密文</label>
+                    <div id="cipherOutput" class="w-full p-6 min-h-[120px] rounded-lg bg-white text-slate-800 flex flex-wrap items-center content-start gap-1 shadow-inner">
+                        <span class="text-slate-400 italic select-none">在此处显示密码符号...</span>
+                    </div>
+                    <!-- Decorative corner -->
+                    <div class="absolute bottom-0 right-0 p-2 opacity-10 pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-slate-900" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 
     <script>
-        // Cipher configuration
-        const gridShapes = {
-            'A': 'border-b-4 border-r-4',
-            'B': 'border-b-4 border-l-4 border-r-4',
-            'C': 'border-b-4 border-l-4',
-            'D': 'border-t-4 border-b-4 border-r-4',
-            'E': 'border-4',
-            'F': 'border-t-4 border-b-4 border-l-4',
-            'G': 'border-t-4 border-r-4',
-            'H': 'border-t-4 border-l-4 border-r-4',
-            'I': 'border-t-4 border-l-4',
-            'J': 'border-b-4 border-r-4',
-            'K': 'border-b-4 border-l-4 border-r-4',
-            'L': 'border-b-4 border-l-4',
-            'M': 'border-t-4 border-b-4 border-r-4',
-            'N': 'border-4',
-            'O': 'border-t-4 border-b-4 border-l-4',
-            'P': 'border-t-4 border-r-4',
-            'Q': 'border-t-4 border-l-4 border-r-4',
-            'R': 'border-t-4 border-l-4'
+        // --- Configuration & Data ---
+        const layouts = {
+            standard: {
+                name: "标准版 (Standard)",
+                desc: "最经典的猪圈密码。字母按行顺序填充。",
+                grids: [
+                    { letters: ['A','B','C','D','E','F','G','H','I'], dots: 0 },
+                    { letters: ['J','K','L','M','N','O','P','Q','R'], dots: 1 }
+                ],
+                xShapes: [
+                    { letters: ['S','T','U','V'], dots: 0 },
+                    { letters: ['W','X','Y','Z'], dots: 1 }
+                ]
+            },
+            vertical: {
+                name: "竖向填充版 (Vertical)",
+                desc: "结构相同，但字母是竖着填入格子的。注意A、B、C的位置变化。",
+                grids: [
+                    { letters: ['A','D','G','B','E','H','C','F','I'], dots: 0 },
+                    { letters: ['J','M','P','K','N','Q','L','O','R'], dots: 1 }
+                ],
+                xShapes: [
+                    { letters: ['S','T','U','V'], dots: 0 },
+                    { letters: ['W','X','Y','Z'], dots: 1 }
+                ]
+            },
+            allgrid: {
+                name: "全井字格版 (All Grid)",
+                desc: "不使用X形，而是使用第三个井字格（带2个点）。",
+                grids: [
+                    { letters: ['A','B','C','D','E','F','G','H','I'], dots: 0 },
+                    { letters: ['J','K','L','M','N','O','P','Q','R'], dots: 1 },
+                    { letters: ['S','T','U','V','W','X','Y','Z',''], dots: 2 }
+                ],
+                xShapes: []
+            }
         };
 
-        const xShapes = {
-            'S': { points: '0,0 24,24 48,0', dotPos: { cx: 24, cy: 10 }, hasDot: false },
-            'T': { points: '48,0 24,24 48,48', dotPos: { cx: 38, cy: 24 }, hasDot: false },
-            'U': { points: '0,48 24,24 48,48', dotPos: { cx: 24, cy: 38 }, hasDot: false },
-            'V': { points: '0,0 24,24 0,48', dotPos: { cx: 10, cy: 24 }, hasDot: false },
-            'W': { points: '0,0 24,24 48,0', dotPos: { cx: 24, cy: 10 }, hasDot: true },
-            'X': { points: '48,0 24,24 48,48', dotPos: { cx: 38, cy: 24 }, hasDot: true },
-            'Y': { points: '0,48 24,24 48,48', dotPos: { cx: 24, cy: 38 }, hasDot: true },
-            'Z': { points: '0,0 24,24 0,48', dotPos: { cx: 10, cy: 24 }, hasDot: true }
-        };
+        const gridBorders = [
+            'border-b-4 border-r-4', 'border-b-4 border-l-4 border-r-4', 'border-b-4 border-l-4',
+            'border-t-4 border-b-4 border-r-4', 'border-4', 'border-t-4 border-b-4 border-l-4',
+            'border-t-4 border-r-4', 'border-t-4 border-l-4 border-r-4', 'border-t-4 border-l-4'
+        ];
 
-        function getShapeConfig(char) {
-            const c = char.toUpperCase();
+        const xShapesList = ['v-shape', 'left-caret', 'caret', 'right-caret'];
 
-            // Group 1: A-I (Standard Grid)
-            if ('ABCDEFGHI'.includes(c)) {
-                return { type: 'grid', className: gridShapes[c], hasDot: false };
+        let currentVariant = 'standard';
+        let charMap = {};
+
+        // --- Functions ---
+
+        function buildCharMap() {
+            charMap = {};
+            const layout = layouts[currentVariant];
+
+            // Process Grids
+            layout.grids.forEach(grid => {
+                grid.letters.forEach((char, index) => {
+                    if (!char) return;
+                    charMap[char] = {
+                        type: 'grid',
+                        className: gridBorders[index],
+                        dots: grid.dots
+                    };
+                });
+            });
+
+            // Process X Shapes
+            if (layout.xShapes) {
+                layout.xShapes.forEach(xGroup => {
+                    xGroup.letters.forEach((char, index) => {
+                        if (!char) return;
+                        charMap[char] = {
+                            type: 'x',
+                            shape: xShapesList[index],
+                            dots: xGroup.dots
+                        };
+                    });
+                });
             }
+        }
 
-            // Group 2: J-R (Dotted Grid)
-            if ('JKLMNOPQR'.includes(c)) {
-                return { type: 'grid', className: gridShapes[c], hasDot: true };
+        function setVariant(variant) {
+            currentVariant = variant;
+
+            // Update button styles
+            ['standard', 'vertical', 'allgrid'].forEach(v => {
+                const btn = document.getElementById('btn-' + v);
+                if (v === variant) {
+                    btn.className = 'flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all bg-blue-600 text-white shadow-lg scale-105';
+                } else {
+                    btn.className = 'flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all bg-white text-slate-600 hover:bg-slate-100';
+                }
+            });
+
+            // Update description
+            const layout = layouts[variant];
+            document.getElementById('variant-name').textContent = layout.name;
+            document.getElementById('variant-desc').textContent = layout.desc;
+            document.getElementById('mode-badge').textContent = '当前模式: ' + layout.name;
+
+            // Rebuild char map and render
+            buildCharMap();
+            renderKeyDisplay();
+            updateCipherOutput();
+        }
+
+        function renderKeyDisplay() {
+            const container = document.getElementById('keyDisplay');
+            container.innerHTML = '';
+            const layout = layouts[currentVariant];
+
+            // Render Grids
+            layout.grids.forEach((grid, idx) => {
+                const label = grid.dots === 0 ? "基础井字 (无点)" :
+                              grid.dots === 1 ? "一点井字 (1点)" : "两点井字 (2点)";
+                container.appendChild(createGridKey(grid.letters, grid.dots, label));
+            });
+
+            // Render X Shapes
+            if (layout.xShapes && layout.xShapes.length > 0) {
+                layout.xShapes.forEach((xGroup, idx) => {
+                    const label = xGroup.dots === 0 ? "基础X形 (无点)" : "带点X形 (1点)";
+                    container.appendChild(createXKey(xGroup.letters, xGroup.dots, label));
+                });
             }
+        }
 
-            // Group 3 & 4: S-Z (X Shapes)
-            if ('STUVWXYZ'.includes(c)) {
-                return { type: 'x', config: xShapes[c] };
-            }
+        function createGridKey(letters, dots, label) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex flex-col items-center';
 
-            return { type: 'text', char: char };
+            const grid = document.createElement('div');
+            grid.className = 'grid grid-cols-3 w-40 h-40';
+
+            letters.forEach((l, i) => {
+                const cell = document.createElement('div');
+                cell.className = `flex items-center justify-center text-xl font-bold text-slate-800 relative ${gridBorders[i]} border-slate-800`;
+                cell.textContent = l;
+
+                // Dots overlay
+                if (dots > 0) {
+                    const dotOverlay = document.createElement('div');
+                    dotOverlay.className = 'absolute inset-0 flex items-center justify-center pointer-events-none opacity-40';
+
+                    if (dots === 1) {
+                        dotOverlay.innerHTML = '<div class="w-1.5 h-1.5 bg-slate-800 rounded-full mt-6"></div>';
+                    } else if (dots === 2) {
+                        dotOverlay.innerHTML = '<div class="flex gap-1 mt-6"><div class="w-1.5 h-1.5 bg-slate-800 rounded-full"></div><div class="w-1.5 h-1.5 bg-slate-800 rounded-full"></div></div>';
+                    }
+                    cell.appendChild(dotOverlay);
+                }
+
+                grid.appendChild(cell);
+            });
+
+            const labelEl = document.createElement('p');
+            labelEl.className = 'mt-2 text-sm font-semibold text-slate-500';
+            labelEl.textContent = label;
+
+            wrapper.appendChild(grid);
+            wrapper.appendChild(labelEl);
+            return wrapper;
+        }
+
+        function createXKey(letters, dots, label) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'flex flex-col items-center';
+
+            const container = document.createElement('div');
+            container.className = 'relative w-40 h-40 flex items-center justify-center';
+
+            // SVG X lines
+            container.innerHTML = `
+                <svg width="100%" height="100%" viewBox="0 0 200 200" class="absolute inset-0">
+                    <line x1="20" y1="20" x2="180" y2="180" stroke="#1e293b" stroke-width="4" />
+                    <line x1="180" y1="20" x2="20" y2="180" stroke="#1e293b" stroke-width="4" />
+                </svg>
+            `;
+
+            // Letters grid
+            const lettersGrid = document.createElement('div');
+            lettersGrid.className = 'relative w-full h-full grid grid-cols-3 grid-rows-3 text-xl font-bold text-slate-800';
+
+            // Top (S/W)
+            lettersGrid.innerHTML = `
+                <div></div>
+                <div class="flex flex-col justify-center items-center pb-4">
+                    <span>${letters[0]}</span>
+                    ${dots === 1 ? '<div class="w-1.5 h-1.5 bg-slate-800 rounded-full opacity-40 mt-1"></div>' : ''}
+                </div>
+                <div></div>
+
+                <div class="flex items-center justify-end pr-4">
+                    ${dots === 1 ? '<div class="w-1.5 h-1.5 bg-slate-800 rounded-full opacity-40 mr-1"></div>' : ''}
+                    <span>${letters[3]}</span>
+                </div>
+                <div></div>
+                <div class="flex items-center justify-start pl-4">
+                    <span>${letters[1]}</span>
+                    ${dots === 1 ? '<div class="w-1.5 h-1.5 bg-slate-800 rounded-full opacity-40 ml-1"></div>' : ''}
+                </div>
+
+                <div></div>
+                <div class="flex flex-col justify-center items-center pt-4">
+                    ${dots === 1 ? '<div class="w-1.5 h-1.5 bg-slate-800 rounded-full opacity-40 mb-1"></div>' : ''}
+                    <span>${letters[2]}</span>
+                </div>
+                <div></div>
+            `;
+
+            container.appendChild(lettersGrid);
+
+            const labelEl = document.createElement('p');
+            labelEl.className = 'mt-2 text-sm font-semibold text-slate-500';
+            labelEl.textContent = label;
+
+            wrapper.appendChild(container);
+            wrapper.appendChild(labelEl);
+            return wrapper;
         }
 
         function createCipherChar(char) {
-            const config = getShapeConfig(char);
+            const c = char.toUpperCase();
+            const config = charMap[c];
 
-            if (config.type === 'text') {
+            if (!config) {
                 const span = document.createElement('span');
-                span.className = 'text-3xl font-mono mx-1 text-gray-400';
-                span.textContent = config.char;
+                span.className = 'text-3xl font-mono mx-1 text-gray-300';
+                span.textContent = char;
                 return span;
             }
 
             if (config.type === 'grid') {
                 const div = document.createElement('div');
-                div.className = `relative w-12 h-12 border-slate-800 flex items-center justify-center mx-1 my-1 ${config.className}`;
+                div.className = `relative w-10 h-10 border-slate-800 flex items-center justify-center mx-1 my-1 ${config.className}`;
 
-                if (config.hasDot) {
-                    const dot = document.createElement('div');
-                    dot.className = 'w-2 h-2 bg-slate-800 rounded-full';
-                    div.appendChild(dot);
+                if (config.dots === 1) {
+                    div.innerHTML = '<div class="w-1.5 h-1.5 bg-slate-800 rounded-full"></div>';
+                } else if (config.dots === 2) {
+                    div.innerHTML = '<div class="flex gap-1"><div class="w-1.5 h-1.5 bg-slate-800 rounded-full"></div><div class="w-1.5 h-1.5 bg-slate-800 rounded-full"></div></div>';
                 }
                 return div;
             }
 
             if (config.type === 'x') {
                 const container = document.createElement('div');
-                container.className = 'relative w-12 h-12 mx-1 my-1 flex items-center justify-center';
+                container.className = 'relative w-10 h-10 mx-1 my-1 flex items-center justify-center';
+
+                let points = "";
+                let dotPos = null;
+
+                if (config.shape === 'v-shape') {
+                    points = "0,0 20,20 40,0";
+                    if (config.dots > 0) dotPos = {cx: 20, cy: 8};
+                } else if (config.shape === 'left-caret') {
+                    points = "40,0 20,20 40,40";
+                    if (config.dots > 0) dotPos = {cx: 32, cy: 20};
+                } else if (config.shape === 'caret') {
+                    points = "0,40 20,20 40,40";
+                    if (config.dots > 0) dotPos = {cx: 20, cy: 32};
+                } else if (config.shape === 'right-caret') {
+                    points = "0,0 20,20 0,40";
+                    if (config.dots > 0) dotPos = {cx: 8, cy: 20};
+                }
 
                 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                svg.setAttribute('width', '48');
-                svg.setAttribute('height', '48');
-                svg.setAttribute('viewBox', '0 0 48 48');
+                svg.setAttribute('width', '40');
+                svg.setAttribute('height', '40');
+                svg.setAttribute('viewBox', '0 0 40 40');
 
                 const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-                polyline.setAttribute('points', config.config.points);
+                polyline.setAttribute('points', points);
                 polyline.setAttribute('fill', 'none');
                 polyline.setAttribute('stroke', '#1e293b');
                 polyline.setAttribute('stroke-width', '4');
                 svg.appendChild(polyline);
 
-                if (config.config.hasDot) {
+                if (dotPos) {
                     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    circle.setAttribute('cx', config.config.dotPos.cx);
-                    circle.setAttribute('cy', config.config.dotPos.cy);
-                    circle.setAttribute('r', '3');
+                    circle.setAttribute('cx', dotPos.cx);
+                    circle.setAttribute('cy', dotPos.cy);
+                    circle.setAttribute('r', '2.5');
                     circle.setAttribute('fill', '#1e293b');
                     svg.appendChild(circle);
                 }
@@ -293,26 +413,24 @@
             output.innerHTML = '';
 
             if (text.length === 0) {
-                const placeholder = document.createElement('span');
-                placeholder.className = 'text-slate-400 italic';
-                placeholder.textContent = '等待输入...';
-                output.appendChild(placeholder);
+                output.innerHTML = '<span class="text-slate-400 italic select-none">在此处显示密码符号...</span>';
                 return;
             }
 
             for (const char of text) {
-                const cipherElement = createCipherChar(char);
-                if (cipherElement) {
-                    output.appendChild(cipherElement);
-                }
+                const el = createCipherChar(char);
+                if (el) output.appendChild(el);
             }
         }
 
-        // Initialize
+        // --- Initialize ---
         document.addEventListener('DOMContentLoaded', function() {
+            buildCharMap();
+            renderKeyDisplay();
+
             const input = document.getElementById('inputText');
             input.addEventListener('input', updateCipherOutput);
-            updateCipherOutput(); // Initial render
+            updateCipherOutput();
         });
     </script>
 </body>
